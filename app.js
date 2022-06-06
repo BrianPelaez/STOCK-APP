@@ -2,6 +2,7 @@ require('dotenv').config(); // Busca si hay un archivo con variables de entorno 
 const express = require('express');
 const mongoose = require('mongoose')
 const path = require('path');
+const axios = require('axios') // Fetch de lado de servidor
 
 const app = express();
 
@@ -49,7 +50,53 @@ app.post('/api/v1/products', async (req, res) => {
     next(); // Para que la logica continue con el siguiente Middleware (app.use())
 });*/
 
-app.use(express.static(path.join(__dirname, 'public'))); // Concatena la direccion de la ruta root de app.js con /public sin importar el S.O. ( '\' o '/' )
+// IMPRIMIR DEL LADO DEL SERVIDOR
+app.get('/', (req, res, next) => {
+    const POKE_API_URL = "https://pokeapi.co/api/v2/pokemon" // + { id o nombre }
+    
+
+        axios(`${POKE_API_URL}/`+1)
+        .then((response) => {
+            
+            const pokemon = response.data; 
+            console.log(pokemon)
+            const html = `
+            <head>
+                <meta charset="UTF-8">
+                <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <!-- CSS Start -->
+                <link rel="stylesheet" href="style.css">
+                <!-- CSS End-->
+                <title>Document</title>
+            </head>
+            <body>
+                <h1>App de productos</h1>
+                <a href="about.html">About</a>
+                <div class="form-container">
+                    <input type="text" id="productName" placeholder="Nombre del producto...">
+                    <input type="number" id="productPrice" placeholder="Precio...">
+                    <button>Crear Producto</button>
+                </div>
+            
+                <h2>Listado de Productos</h2>
+            
+                <div class="pokemon-container">
+                    <div class="poke-card">
+                        <h3>${pokemon.name}</h3>
+                        <img src="${pokemon.sprites.front_shiny}" alt="${pokemon.name}">
+                        <span>#${pokemon.id}</span>
+                    </div>
+                </div>
+                <script src="script.js"></script>
+            </body>
+            `
+            res.send(html)
+        })
+            
+});
+
+app.use(express.static(path.join(__dirname, 'public'))); // Hace que todo el contenido de la carpeta public este disponible en la WEB
                                                         // EJ: C:/USER/STOCK-APP/BACKEND/PUBLIC
 
 const PORT = process.env.PORT || 4000 // Para acceder a las variables de entorno .env o hardcodear puerto 4000
